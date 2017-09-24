@@ -15,7 +15,6 @@ Gem::Specification.new do |spec|
     "output to logfiles and the console, output capture, and signal propagation."
   spec.license       = "MIT"
 
-
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
