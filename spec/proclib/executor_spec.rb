@@ -18,7 +18,29 @@ module Proclib
 
     describe '#run_sync' do
       it 'returns the result' do
-        expect(subject.run_sync.status).to eql(0)
+        status, stdout, stderr = subject.run_sync
+        expect(status).to eql(0)
+      end
+
+      context 'with caching' do
+        subject { described_class.new(runnable, cache_output: true) }
+
+        class MockRunnable
+          def spawn
+            Thread.new do
+              emit(:output, OpenStruct.new(
+                process_tag: :test,
+                pipe_name: :stdout,
+                line: 'oh hell yeah'))
+              emit(:exit, OpenStruct.new(status: 0))
+            end
+          end
+        end
+
+        it 'retains the output' do
+          status, stdout, stderr = subject.run_sync
+          expect(stdout).to eql(['oh hell yeah'])
+        end
       end
     end
   end

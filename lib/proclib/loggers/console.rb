@@ -6,6 +6,7 @@ module Proclib
         STDOUT.printf("%s | %s | %s",
           message.process_tag, message.pipe_name, message.line)
       end
+      alias_method :<<, :log
     end
   end
 end

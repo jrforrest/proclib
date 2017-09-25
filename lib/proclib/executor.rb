@@ -1,13 +1,16 @@
 require 'proclib/event_emitter'
 require 'proclib/loggers/console'
+require 'proclib/output_cache'
 
 module Proclib
   # Runs a runnable, handling emitted events and dispatching to configured
   # facilities
   class Executor
-    def initialize(runnable, log_to_console: false)
+    attr_reader :opts
+
+    def initialize(runnable, opts = {})
       @runnable = runnable
-      @log_to_console = log_to_console
+      @opts = opts
     end
 
     def on(name, &block)
@@ -18,7 +21,7 @@ module Proclib
       configure
       runnable.spawn
       channel.watch
-      @result
+      return @status, *%i{stdout stderr}.map {|i| output_cache.pipe_aggregate(i) }
     end
 
     private
@@ -28,14 +31,19 @@ module Proclib
     def configure
       runnable.bind_to(channel)
       channel.on(:exit) do |event|
-        @result = event.data
+        @status = event.data.to_i
         channel.finalize
       end
       configure_output
     end
 
     def configure_output
-      channel.on(:output) {|e| console_logger.log(e.data) } if log_to_console
+      channel.on(:output) {|e| console_logger << e.data } if opts[:log_to_console]
+      channel.on(:output) {|e| output_cache << e.data} if opts[:cache_output]
+    end
+
+    def output_cache
+      @output_cache ||= OutputCache.new
     end
 
     def console_logger
