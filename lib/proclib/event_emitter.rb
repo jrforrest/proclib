@@ -13,7 +13,8 @@ module Proclib
         @handlers = Hash.new
       end
 
-      def push(msg) unless msg.kind_of?(Event)
+      def push(msg)
+        unless msg.kind_of?(Event)
           raise(Error, "EventEmitter::Queue should only handle messages of type EventEmitter::Event")
         end
 
