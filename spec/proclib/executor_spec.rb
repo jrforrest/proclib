@@ -8,7 +8,7 @@ module Proclib
       include EventEmitter::Producer
 
       def spawn
-        Thread.new { emit(:exit, OpenStruct.new(status: 0)) }
+        Thread.new { emit(:exit, 0) }
       end
     end
 
@@ -32,7 +32,7 @@ module Proclib
                 process_tag: :test,
                 pipe_name: :stdout,
                 line: 'oh hell yeah'))
-              emit(:exit, OpenStruct.new(status: 0))
+              emit(:exit, 0)
             end
           end
         end
@@ -40,6 +40,11 @@ module Proclib
         it 'retains the output' do
           status, stdout, stderr = subject.run_sync
           expect(stdout).to eql(['oh hell yeah'])
+        end
+
+        it 'doesn\'t leave threads around' do
+          subject.run_sync
+          expect(Thread.list.count).to eql(1)
         end
       end
     end
