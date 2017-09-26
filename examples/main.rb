@@ -15,3 +15,7 @@ _, stdout, _ = Proclib.run("ls /tmp/", capture_output: true)
 
 puts "Files in /tmp"
 puts stdout.join
+
+cmd = "seq 1 10 | while read n; do echo $n; sleep 0.5; done"
+
+Proclib.run({tmp: cmd, home: cmd}, log_to_console: true)

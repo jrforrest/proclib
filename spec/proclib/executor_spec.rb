@@ -33,6 +33,7 @@ module Proclib
                 pipe_name: :stdout,
                 line: 'oh hell yeah'))
               emit(:exit, 0)
+              emit(:complete, 0)
             end
           end
         end

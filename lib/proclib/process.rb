@@ -24,8 +24,13 @@ module Proclib
       raise(Error, "Already started process") unless @wait_thread.nil?
 
       pipes.stdin, pipes.stdout, pipes.stderr, @wait_thread = Open3.popen3(cmdline)
+      @state = :running?
       start_output_emitters
       start_watch_thread
+    end
+
+    def complete?
+      @state == :complete
     end
 
     private
@@ -35,8 +40,9 @@ module Proclib
       Thread.new do
         result = wait_thread.value
         io_handlers.each_pair {|(_, e)| e.wait }
-        @state = :done
+        @state = :complete
         emit(:exit, result)
+        emit(:complete)
       end
     end
 

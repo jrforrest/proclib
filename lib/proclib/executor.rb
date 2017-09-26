@@ -30,7 +30,7 @@ module Proclib
 
     def configure
       runnable.bind_to(channel)
-      channel.on(:exit) do |event|
+      channel.on(:complete) do |event|
         @status = event.data.to_i
         channel.finalize
       end

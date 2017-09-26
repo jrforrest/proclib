@@ -59,10 +59,11 @@ module Proclib
       end
 
       def emit(name, data = nil)
-        if bound?
-          event = Event.new(name, self, data)
-          @event_queue.push(event)
-        end
+        push(Event.new(name, self, data))
+      end
+
+      def push(event)
+        @event_queue.push(event) if bound?
       end
     end
   end
