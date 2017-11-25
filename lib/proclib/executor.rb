@@ -40,6 +40,13 @@ module Proclib
     def configure_output
       channel.on(:output) {|e| console_logger << e.data } if opts[:log_to_console]
       channel.on(:output) {|e| output_cache << e.data} if opts[:cache_output]
+
+      if opts[:on_output]
+        channel.on(:output) do |e|
+          msg = e.data
+          opts[:on_output].call(msg.line, msg.process_tag, msg.pipe_name)
+        end
+      end
     end
 
     def output_cache
