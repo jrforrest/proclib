@@ -11,6 +11,10 @@ require_relative '../lib/proclib'
 
 Proclib.run("echo herorooo >&2", tag: :test, log_to_console: true)
 
+# Pass env vars to subprocess
+
+Proclib.run("echo $FOO", env: {FOO: 'hi'}, log_to_console: true)
+
 _, stdout, _ = Proclib.run("ls /tmp/", capture_output: true)
 
 puts "Files in /tmp"

@@ -14,12 +14,15 @@ module Proclib
       tag: nil,
       log_to_console: false,
       capture_output: true,
+      env: {},
       on_output: nil)
 
+      raise(ArgumentError, "env must be a Hash") unless env.kind_of?(Hash)
+
       runnable = if cmd.kind_of? String
-         Process.new(cmd, tag: tag || cmd[0..20])
+         Process.new(cmd, tag: tag || cmd[0..20], env: env)
       elsif cmd.kind_of?(Hash)
-        processes = cmd.map {|(k,v)| Process.new(v, tag: k || v[0..20]) }
+        processes = cmd.map {|(k,v)| Process.new(v, tag: k || v[0..20], env: env) }
         ProcessGroup.new(processes)
       else
         raise ArgumentError, "Unexpected type for `cmd`: #{cmd.class}.  \n"\
@@ -34,7 +37,6 @@ module Proclib
         log_to_console: log_to_console,
         on_output: on_output,
         cache_output: capture_output)
-
 
       executor.run_sync
     end
