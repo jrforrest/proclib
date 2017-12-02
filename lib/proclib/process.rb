@@ -8,23 +8,33 @@ module Proclib
   class Process
     include EventEmitter::Producer
 
-    attr_reader :cmdline, :tag, :env
+    attr_reader :cmdline, :tag, :env, :run_dir
 
     Error = Class.new(StandardError)
 
-    def initialize(cmdline, tag:, env: {})
+    def initialize(cmdline, tag:, env: {}, run_dir: nil)
       @cmdline = cmdline
       @tag = tag
       @env = env.map {|k,v| [k.to_s, v.to_s]}.to_h
       @state = :ready
       @io_handlers = OpenStruct.new
       @pipes = OpenStruct.new
+      @run_dir = run_dir
     end
 
     def spawn
       raise(Error, "Already started process") unless @wait_thread.nil?
 
-      pipes.stdin, pipes.stdout, pipes.stderr, @wait_thread = Open3.popen3(env, cmdline)
+      spawn = -> do
+        pipes.stdin, pipes.stdout, pipes.stderr, @wait_thread = Open3.popen3(env, cmdline)
+      end
+
+      if run_dir
+        Dir.chdir(run_dir) { spawn.call }
+      else
+        spawn.call
+      end
+
       @state = :running?
       start_output_emitters
       start_watch_thread
