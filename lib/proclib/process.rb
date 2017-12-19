@@ -65,19 +65,6 @@ module Proclib
         end
       end
     end
-
-    def check_started
-      if wait_thread.nil?
-        raise Error, "Process `#{tag}` is not yet started!"
-      end
-    end
-
-    def output_buffer
-      check_started
-      @output_buffer ||= OutputBuffer.new(tag, stdout_pipe, stderr_pipe).tap do |buffer|
-        bubble_events_for(buffer)
-      end
-    end
   end
   private_constant :Process
 end
