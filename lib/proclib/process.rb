@@ -8,14 +8,15 @@ module Proclib
   class Process
     include EventEmitter::Producer
 
-    attr_reader :cmdline, :tag, :env, :run_dir
+    attr_reader :cmdline, :tag, :env, :run_dir, :host
 
     Error = Class.new(StandardError)
 
-    def initialize(cmdline, tag:, env: {}, run_dir: nil)
+    def initialize(cmdline, tag:, env: {}, run_dir: nil, host: nil)
       @cmdline = cmdline
       @tag = tag
       @env = env.map {|k,v| [k.to_s, v.to_s]}.to_h
+      @host = host
       @state = :ready
       @io_handlers = OpenStruct.new
       @pipes = OpenStruct.new

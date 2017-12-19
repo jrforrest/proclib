@@ -16,16 +16,18 @@ module Proclib
       capture_output: true,
       env: {},
       on_output: nil,
-      cwd: nil
+      cwd: nil,
+      host: nil,
     )
-
       raise(ArgumentError, "env must be a Hash") unless env.kind_of?(Hash)
 
+      process_class = host.present? ? SSHProcess : Process
+
       runnable = if cmd.kind_of? String
-         Process.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd)
+        process_class.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd)
       elsif cmd.kind_of?(Hash)
         processes = cmd.map do |(k,v)|
-          Process.new(v, tag: k || v[0..20], env: env, run_dir: cwd)
+          process_class.new(v, tag: k || v[0..20], env: env, run_dir: cwd)
         end
 
         ProcessGroup.new(processes)
