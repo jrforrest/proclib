@@ -1,10 +1,14 @@
 require 'open3'
 require 'thread'
 
-require 'proclib/version'
+module Proclib
+  Error = Class.new(StandardError)
+end
 
+require 'proclib/version'
 require 'proclib/event_emitter'
 require 'proclib/process'
+require 'proclib/ssh_process'
 require 'proclib/process_group'
 require 'proclib/executor'
 
@@ -17,17 +21,23 @@ module Proclib
       env: {},
       on_output: nil,
       cwd: nil,
-      host: nil,
+      host: nil
     )
       raise(ArgumentError, "env must be a Hash") unless env.kind_of?(Hash)
 
-      process_class = host.present? ? SSHProcess : Process
-
       runnable = if cmd.kind_of? String
-        process_class.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd)
+        if host.nil?
+          Process.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd)
+        else
+          SSHProcess.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd, host: host)
+        end
       elsif cmd.kind_of?(Hash)
         processes = cmd.map do |(k,v)|
-          process_class.new(v, tag: k || v[0..20], env: env, run_dir: cwd)
+          if host.nil?
+            Process.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd)
+          else
+            SSHProcess.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd, host: host)
+          end
         end
 
         ProcessGroup.new(processes)
