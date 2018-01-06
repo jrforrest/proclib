@@ -1,10 +1,6 @@
 require 'open3'
 require 'thread'
 
-module Proclib
-  Error = Class.new(StandardError)
-end
-
 require 'proclib/version'
 require 'proclib/event_emitter'
 require 'proclib/process'

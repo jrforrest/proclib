@@ -1,4 +1,5 @@
 require 'thread'
+require 'proclib/errors'
 
 module Proclib
   # Emits events for the given io pipe with relevant tagging info
