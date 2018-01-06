@@ -1,69 +1,43 @@
 require 'open3'
 require 'ostruct'
 
-require 'proclib/output_handler'
+require 'proclib/command_monitor'
 
 module Proclib
-  # Runs a single process, emitting output, state changes and exit status
+  # Runs a command, emitting output, state changes and
+  # exit status to the given channel
   class Process
-    include EventEmitter::Producer
-
-    attr_reader :cmdline, :tag, :env, :run_dir
+    attr_reader :command, :channel
 
     Error = Class.new(StandardError)
 
-    def initialize(cmdline, tag:, env: {}, run_dir: nil)
-      @cmdline = cmdline
-      @tag = tag
-      @env = env.map {|k,v| [k.to_s, v.to_s]}.to_h
-      @state = :ready
-      @io_handlers = OpenStruct.new
-      @pipes = OpenStruct.new
-      @run_dir = run_dir
+    def initialize(command, channel:)
+      @command, @channel, @state = command, channel, :ready
     end
 
     def spawn
-      raise(Error, "Already started process") unless @wait_thread.nil?
+      raise(Error, "Already started process") if @state != :ready
 
-      spawn = -> do
-        pipes.stdin, pipes.stdout, pipes.stderr, @wait_thread = Open3.popen3(env, cmdline)
-      end
+      @state = :started
+      command.spawn
 
-      if run_dir
-        Dir.chdir(run_dir) { spawn.call }
-      else
-        spawn.call
-      end
-
-      @state = :running?
-      start_output_emitters
+      output_emitter.start
       start_watch_thread
     end
 
-    def complete?
-      @state == :complete
-    end
-
     private
-    attr_reader :wait_thread, :io_handlers, :pipes
+    attr_reader :wait_thread, :io_handlers
 
     def start_watch_thread
-      Thread.new do
-        result = wait_thread.value
-        io_handlers.each_pair {|(_, e)| e.wait }
-        @state = :complete
-        emit(:exit, result)
-        emit(:complete)
+      @watch_thread ||= Thread.new do
+        command.wait
+        output_emitter.wait
+        channel.emit(:exit, command.result)
       end
     end
 
-    def start_output_emitters
-      %i(stderr stdout).map do |type|
-        io_handlers[type] = OutputHandler.new(tag, type, pipes[type]).tap do |handler|
-          bubble_events_for(handler)
-          handler.start
-        end
-      end
+    def output_emitter
+      @output_emitter ||= CommandMonitor.new(command, channel: channel)
     end
   end
   private_constant :Process
