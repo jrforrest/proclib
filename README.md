@@ -17,7 +17,7 @@ use this in its current state.
 
 ## Usage
 
-See `examples/main.rb`
+See acceptance specs in `spec/acceptance`.
 
 Currenty, Proclib doesn't do anything on exit to kill child processes, so you'll
 need to trap the appropriate signals yourself to keep from leaving orphaned processes
