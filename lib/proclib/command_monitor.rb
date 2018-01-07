@@ -11,7 +11,6 @@ module Proclib
     end
 
     def start
-      command.spawn
       io_handlers.each(&:start)
     end
 

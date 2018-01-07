@@ -2,9 +2,7 @@ require 'open3'
 require 'thread'
 
 require 'proclib/version'
-require 'proclib/event_emitter'
 require 'proclib/process'
-require 'proclib/ssh_process'
 require 'proclib/process_group'
 require 'proclib/executor'
 
