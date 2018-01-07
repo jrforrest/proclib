@@ -1,59 +1,33 @@
-require 'open3'
-require 'thread'
-
 require 'proclib/version'
-require 'proclib/process'
-require 'proclib/process_group'
 require 'proclib/executor'
+require 'proclib/invocation'
 
 module Proclib
-  module Methods
-    def run(cmd,
-      tag: nil,
-      log_to_console: false,
-      capture_output: true,
-      env: {},
-      on_output: nil,
-      cwd: nil,
-      host: nil
-    )
-      raise(ArgumentError, "env must be a Hash") unless env.kind_of?(Hash)
+  def self.run(cmd,
+    tag: nil,
+    log_to_console: false,
+    capture_output: true,
+    env: {},
+    on_output: nil,
+    cwd: nil,
+    ssh: nil
+  )
 
-      runnable = if cmd.kind_of? String
-        if host.nil?
-          Process.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd)
-        else
-          SSHProcess.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd, host: host)
-        end
-      elsif cmd.kind_of?(Hash)
-        processes = cmd.map do |(k,v)|
-          if host.nil?
-            Process.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd)
-          else
-            SSHProcess.new(cmd, tag: tag || cmd[0..20], env: env, run_dir: cwd, host: host)
-          end
-        end
+    inv = Invocation.new(cmd,
+      tag: tag,
+      env: env,
+      cwd: cwd,
+      ssh: ssh)
 
-        ProcessGroup.new(processes)
-      else
-        raise ArgumentError, "Unexpected type for `cmd`: #{cmd.class}.  \n"\
-          "Expected String or Hash"
-      end
-
-      unless on_output.nil? || on_output.kind_of?(Proc) || on_ouptut.kind_of?(Lambda)
-        raise ArgumentError, "Expected :on_output to be a proc or lambda if given"
-      end
-
-      executor = Executor.new(runnable,
-        log_to_console: log_to_console,
-        on_output: on_output,
-        cache_output: capture_output)
-
-      executor.run_sync
+    executor = Executor.new(inv.commands,
+      log_to_console: log_to_console,
+      cache_output: capture_output
+    ).tap do |ex|
+      ex.on_output(&on_output) unless on_output.nil?
     end
-  end
 
-  class << self
-    include Methods
+    executor.run_sync
+  rescue Invocation::Invalid => e
+    raise ArgumentError, e.message
   end
 end

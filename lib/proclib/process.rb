@@ -1,5 +1,4 @@
-require 'open3'
-require 'ostruct'
+require 'thread'
 
 require 'proclib/command_monitor'
 
