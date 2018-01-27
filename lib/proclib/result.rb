@@ -9,7 +9,7 @@ module Proclib
       @exit_code, @output_cache = exit_code, output_cache
     end
 
-    %i(stdin stdout).each do |type|
+    %i(stderr stdout).each do |type|
       define_method(type) do
         if @output_cache.nil?
           raise OutputNotAvailable, "`#{type}` not cached for this process. "\
