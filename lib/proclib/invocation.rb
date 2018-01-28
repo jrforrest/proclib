@@ -60,10 +60,10 @@ module Proclib
         raise Invalid, "`env` must be a Hash if given"
       end
 
-      @env.each do |*args|
+      @env.each do |args|
         args.each do |v|
           unless [String, Symbol].any? {|c| v.kind_of?(c) }
-            raise Invalid "`env` must be a hash in the form of "\
+            raise Invalid, "`env` must be a hash in the form of "\
               "[String|Symbol] => [String|Symbol] if given"
           end
         end
