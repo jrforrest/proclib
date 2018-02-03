@@ -1,7 +1,9 @@
 require 'pathname'
 
 require 'proclib/errors'
-require 'proclib/command'
+
+require 'proclib/commands/local'
+require 'proclib/commands/ssh'
 
 module Proclib
   class Invocation
@@ -49,9 +51,9 @@ module Proclib
 
     def command_class
       if validated_ssh.nil?
-        Commands::LocalCommand
+        Commands::Local
       else
-        Commands::SshCommand
+        Commands::Ssh
       end
     end
 

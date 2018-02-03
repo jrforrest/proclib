@@ -3,8 +3,9 @@ require 'pathname'
 require 'spec_helper'
 
 require 'proclib/process'
-require 'proclib/command'
 require 'proclib/channel'
+
+require 'proclib/commands/ssh'
 
 require 'docker'
 
@@ -32,7 +33,7 @@ module Proclib
     describe 'Running a remote process' do
       let(:channel) { Channel.new(:output, :exit) }
       let(:process) { Process.new(command, channel: channel) }
-      let(:command) { Commands::SshCommand.new(**opts) }
+      let(:command) { Commands::Ssh.new(**opts) }
 
       let(:ssh_opts) do
         { user: 'root',

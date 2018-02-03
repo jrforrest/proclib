@@ -3,14 +3,15 @@ require 'pathname'
 require 'spec_helper'
 
 require 'proclib/process'
-require 'proclib/command'
 require 'proclib/channel'
+
+require 'proclib/commands/local'
 
 module Proclib
   describe 'Running a local process' do
     let(:channel) { Channel.new(:output, :exit) }
     let(:process) { Process.new(command, channel: channel) }
-    let(:command) { Commands::LocalCommand.new(**opts) }
+    let(:command) { Commands::Local.new(**opts) }
     let(:run_dir) { nil }
 
     let(:tag) { :test_command }
