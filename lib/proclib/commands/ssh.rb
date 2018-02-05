@@ -1,15 +1,14 @@
-require 'proclib/commands/base'
 require 'net/ssh'
+require 'proclib/ssh_session'
+require 'proclib/commands/base'
 
 module Proclib
   module Commands
     class Ssh < Base
-      attr_reader :ssh_opts
-
       SSHError = Class.new(Error)
 
-      def initialize(ssh:, **args)
-        @ssh_opts = ssh.clone
+      def initialize(ssh_session:, **args)
+        @ssh_session = ssh_session
         super(**args)
       end
 
@@ -27,7 +26,17 @@ module Proclib
         ssh_session.loop
       end
 
+      def cmdline
+        if !run_dir.nil?
+          "cd #{run_dir}; #{super}"
+        else
+          super
+        end
+      end
+
       private
+
+      attr_reader :ssh_session
 
       def open_channel
          ssh_session.open_channel do |channel|
@@ -54,16 +63,6 @@ module Proclib
           pipes[type] = read
           [type, write]
         end.to_h
-      end
-
-      def ssh_session
-        @ssh_session ||= Net::SSH.start(*ssh_params, ssh_opts).tap do |session|
-          session.chdir(run_dir) unless run_dir.nil?
-        end
-      end
-
-      def ssh_params
-        %i(host user).map {|i| ssh_opts.delete(i)}.compact
       end
     end
   end

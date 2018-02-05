@@ -2,10 +2,7 @@ require 'pathname'
 
 require 'spec_helper'
 
-require 'proclib/process'
-require 'proclib/channel'
-
-require 'proclib/commands/ssh'
+require 'proclib'
 
 require 'docker'
 
@@ -30,20 +27,21 @@ module Proclib
       @container.stop
     end
 
-    describe 'Running a remote process' do
+    let(:ssh_opts) do
+      { user: 'root',
+        password: 'blerp',
+        host: 'localhost',
+        port: 2202,
+        paranoid: false }
+    end
+
+    describe Commands::Ssh do
       let(:channel) { Channel.new(:output, :exit) }
       let(:process) { Process.new(command, channel: channel) }
       let(:command) { Commands::Ssh.new(**opts) }
 
-      let(:ssh_opts) do
-        { user: 'root',
-          password: 'blerp',
-          host: 'localhost',
-          port: 2202,
-          paranoid: false }
-      end
 
-      let(:opts) { { ssh: ssh_opts,  cmdline: 'echo herro!'} }
+      let(:opts) { { ssh: ssh_opts, cmdline: 'echo herro!'} }
 
       before { process.spawn }
 
@@ -59,6 +57,23 @@ module Proclib
       it 'can run a command on the remote host' do
         expect(channel_messages[0].data.line).to eql("herro!\n")
         expect(channel_messages[1].data).to eql(0)
+      end
+    end
+
+    describe 'Proclib.ssh_session' do
+      let(:session) { Proclib.ssh_session(**ssh_opts) }
+
+      it 'can run a command on the remote server' do
+        expect(session.run('echo hi')).to be_success
+      end
+
+      it 'can run a command in a given directory' do
+        expect(session.run('pwd', cwd: '/tmp').stdout.first).to eql("/tmp\n")
+      end
+
+      it 'can run multiple commands on the remote server' do
+        expect(session.run('echo hi')).to be_success
+        expect(session.run('echo bye')).to be_success
       end
     end
   end

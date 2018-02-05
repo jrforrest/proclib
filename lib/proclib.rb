@@ -12,7 +12,6 @@ module Proclib
     cwd: nil,
     ssh: nil
   )
-
     inv = Invocation.new(cmd,
       tag: tag,
       env: env,
@@ -29,5 +28,14 @@ module Proclib
     executor.run_sync
   rescue Invocation::Invalid => e
     raise ArgumentError, e.message
+  end
+
+  def self.ssh_session(user:, host:, password: nil, port: nil, paranoid: nil)
+    ssh_opts = { user: user, host: host }
+    ssh_opts[:port] = port unless port.nil?
+    ssh_opts[:paranoid] = paranoid unless paranoid.nil?
+    ssh_opts[:password] = password unless password.nil?
+
+    SshSession.new(ssh_opts)
   end
 end

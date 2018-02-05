@@ -5,6 +5,8 @@ require 'proclib/errors'
 require 'proclib/commands/local'
 require 'proclib/commands/ssh'
 
+require 'net/ssh'
+
 module Proclib
   class Invocation
     Invalid = Class.new(Error)
@@ -45,7 +47,7 @@ module Proclib
         run_dir: validated_cwd,
         cmdline: validated_cmd
       }.tap do |args|
-        args[:ssh] = validated_ssh if !validated_ssh.nil?
+        args[:ssh_session] = validated_ssh if !validated_ssh.nil?
       end
     end
 
@@ -84,6 +86,7 @@ module Proclib
 
     def validated_ssh
       return if @ssh.nil?
+      return @ssh if @ssh.kind_of?(Net::SSH::Connection::Session)
 
       @validated_ssh ||= begin
         %i(host user).each do |k|
