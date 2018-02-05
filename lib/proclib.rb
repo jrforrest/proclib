@@ -8,6 +8,7 @@ module Proclib
     log_to_console: false,
     capture_output: true,
     env: {},
+    stdin: nil,
     on_output: nil,
     cwd: nil,
     ssh: nil
@@ -16,6 +17,7 @@ module Proclib
       tag: tag,
       env: env,
       cwd: cwd,
+      stdin: stdin,
       ssh: ssh)
 
     executor = Executor.new(inv.commands,

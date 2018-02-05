@@ -75,6 +75,10 @@ module Proclib
         expect(session.run('echo hi')).to be_success
         expect(session.run('echo bye')).to be_success
       end
+
+      it 'can handle stdin' do
+        expect(session.run('cat', stdin: StringIO.new('hello')).stdout.first).to eql("hello\n")
+      end
     end
   end
 end

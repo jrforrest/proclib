@@ -2,10 +2,7 @@ require 'pathname'
 
 require 'spec_helper'
 
-require 'proclib/process'
-require 'proclib/channel'
-
-require 'proclib/commands/local'
+require 'proclib'
 
 module Proclib
   describe 'Running a local process' do
@@ -47,6 +44,12 @@ module Proclib
       def output_message_with_file(name)
         channel_messages.find {|m| m.data.line == name + "\n" }
       end
+    end
+  end
+
+  describe 'proclib.run' do
+    it 'can handle stdin' do
+      expect(Proclib.run('cat', stdin: StringIO.new("woahah")).stdout.first).to eql("woahah\n")
     end
   end
 end

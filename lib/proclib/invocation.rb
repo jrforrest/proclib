@@ -15,6 +15,7 @@ module Proclib
       tag: nil,
       env: {},
       cwd: nil,
+      stdin: nil,
       ssh: nil
     )
       @cmd = cmd
@@ -22,6 +23,7 @@ module Proclib
       @env = env
       @cwd = cwd
       @ssh = ssh
+      @stdin = stdin
     end
 
     def commands
@@ -45,6 +47,7 @@ module Proclib
         tag: @tag,
         env: validated_env,
         run_dir: validated_cwd,
+        stdin: validated_stdin,
         cmdline: validated_cmd
       }.tap do |args|
         args[:ssh_session] = validated_ssh if !validated_ssh.nil?
@@ -115,6 +118,20 @@ module Proclib
         end
 
         @cmd
+      end
+    end
+
+    def validated_stdin
+      @validated_stdin ||= begin
+        return nil if @stdin.nil?
+
+        if %i(eof? read close).none? {|m| @stdin.respond_to?(m) }
+          raise Invalid, "Expected stdin to to be IO."
+        elsif !@cmd.kind_of?(String)
+          raise Invalid, "Stdin can not be given when running simultaneous commands."
+        end
+
+        @stdin
       end
     end
   end

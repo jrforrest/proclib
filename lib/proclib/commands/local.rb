@@ -14,6 +14,16 @@ module Proclib
         else
           spawn.call
         end
+
+        unless stdin.nil?
+          until stdin.eof?
+            pipes.stdin.write(stdin.read(STDIN_BUF_SIZE))
+          end
+
+          stdin.close
+        end
+
+        pipes.stdin.close
       end
 
       def wait

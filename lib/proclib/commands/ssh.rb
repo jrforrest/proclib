@@ -15,9 +15,16 @@ module Proclib
       def spawn
         write_pipes
 
-        open_channel do |ch|
-          ch.exec(cmdline) do |_, success|
+        open_channel do |channel|
+          channel.exec(cmdline) do |_, success|
             raise SSHError, "Command Failed" unless success
+
+            if !stdin.nil?
+              while msg = stdin.read(STDIN_BUF_SIZE)
+                channel.send_data(msg)
+              end
+              channel.eof!
+            end
           end
         end
       end
@@ -52,6 +59,7 @@ module Proclib
             write_pipes.each {|k,v| v.close }
             @result = data.read_long
           end
+
 
           yield channel
         end

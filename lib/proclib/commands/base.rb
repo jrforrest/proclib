@@ -8,13 +8,16 @@ module Proclib
       NotYetRunning = Class.new(Error)
       NotYetTerminated = Class.new(Error)
 
-      attr_reader :tag, :cmdline, :env, :run_dir
+      STDIN_BUF_SIZE = 1024 * 1024
 
-      def initialize(tag: nil, cmdline:, env: {} , run_dir: nil)
+      attr_reader :tag, :cmdline, :env, :run_dir, :stdin
+
+      def initialize(tag: nil, cmdline:, env: {}, run_dir: nil, stdin: nil)
         @env = env.map {|k,v| [k.to_s, v.to_s]}.to_h
         @cmdline = cmdline
         @tag = tag || cmdline[0..20]
         @run_dir = run_dir
+        @stdin = stdin
       end
 
       def pipes

@@ -13,6 +13,7 @@ module Proclib
       env: {},
       on_output: nil,
       cwd: nil,
+      stdin: nil,
       ssh: nil
     )
 
@@ -20,6 +21,7 @@ module Proclib
         tag: tag,
         env: env,
         ssh: session,
+        stdin: stdin,
         cwd: cwd)
 
       executor = Executor.new(inv.commands,
