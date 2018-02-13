@@ -43,7 +43,7 @@ module Proclib
     end
 
     def session
-      @session ||= Net::SSH.start(*ssh_params, ssh_opts)
+      @session ||= Net::SSH.start(*ssh_params, ssh_opts.merge(forward_agent: true))
     end
   end
   private_constant :SshSession

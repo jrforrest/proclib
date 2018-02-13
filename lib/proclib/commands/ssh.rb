@@ -53,13 +53,12 @@ module Proclib
 
           channel.on_data {|_, data| write_pipes[:stdout].write(data) }
 
-          channel.on_extended_data {|_, data| write_pipes[:stderr].write(data) }
+          channel.on_extended_data {|_, type, data| write_pipes[:stderr].write(data) if type == 1}
 
           channel.on_request("exit-status") do |_, data|
             write_pipes.each {|k,v| v.close }
             @result = data.read_long
           end
-
 
           yield channel
         end
